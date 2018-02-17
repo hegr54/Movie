@@ -1,5 +1,6 @@
 from django.db import models
-
+from datetime import datetime
+from django.db.models.signals import post_save, pre_save
 # Create your models here.
 PUBLISH_CHOICES=(
     ('draft','Draft'),
@@ -27,3 +28,26 @@ class Movie(models.Model):
 
     def __str__(self):
         return smart_text(self.Name)
+
+    def save(self, *args, **kwargs):
+        print ('Se guardo')
+        if not self.slug:
+            if self.Name:
+                self.slug=slugify(self.Name)
+        super(Movie,self).save(*args,**kwargs)
+
+def Movie_model_post_seve_receiver(sender, instance, created, *args, **kwargs):
+    print ("Se ha almacenado")
+    if not instance.slug and instance.Name:
+        instance.slug=slugify(instance.Name)
+        instance.save()
+
+post_save.connect(Movie_model_post_seve_receiver, sender=Movie)
+
+def Movie_model_pre_save_receiver(sender,instance,*args,**kwargs):
+    print('Antes de almacenar')
+    if not instance.slug and instance.Name:
+        instance.slug=slugify(instance.Name)
+        instance.save()
+
+pre_save.connect(Movie_model_pre_save_receiver, sender=Movie)
