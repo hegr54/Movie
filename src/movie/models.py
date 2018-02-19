@@ -13,6 +13,23 @@ PUBLISH_CHOICES=(
     ('publich','publich'),
     ('private','Private')
     )
+
+class MovieModelsQuerySet(models.query.QuerySet):
+    def active(self):
+        return self.filter(active=True)
+
+    def nuevo_Name_items(self, value):
+        return self.filter(Name_icontains=True)
+
+class MovieModelManager(models.Manager):
+    def get_queryset(self):
+        return MovieModelsQuerySet(self.model, using=self._db)
+
+    def all(self,*args,**kwargs):
+        qs = super(MovieModelManager, self).all(*args,**kwargs.active())
+        print (qs)
+        return qs
+
 class Movie(models.Model):
     Name    = models.CharField(max_length=250,
                                     verbose_name='Movie Name',
@@ -31,6 +48,7 @@ class Movie(models.Model):
     Updated = models.DateField(auto_now=True)
     Timestamp=models.DateTimeField(auto_now_add=True)
 
+    objects = MovieModelManager()
 
     def __str__(self):
         return str(self.Name)
