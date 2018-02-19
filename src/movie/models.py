@@ -26,6 +26,7 @@ class Movie(models.Model):
     Gender  = models.CharField(max_length=120, choices=PUBLISH_CHOICES, default="draft")
     Slug    = models.SlugField(null=True, blank=True)
     Active  = models.BooleanField(default=True)
+    publish_date= models.DateField(auto_now=False, auto_now_add=False, default=timezone.now)
     Created = models.DateField(auto_now=True)
     Updated = models.DateField(auto_now=True)
     Timestamp=models.DateTimeField(auto_now_add=True)
@@ -40,6 +41,26 @@ class Movie(models.Model):
             if self.Name:
                 self.Slug=slugify(self.Name)
         super(Movie,self).save(*args,**kwargs)
+
+
+    @property
+    def age(self):
+        if self.Gender=='publish':
+            now=datetime.now()
+            publish_time=datetime.combine(
+                         self.publish_date,
+                         datetime.now().max.time()
+                         )
+            print(publish_time)
+            try:
+                difference=now-publish_time
+                print(difference)
+            except:
+                difference="No hay nada publicado"
+            if difference<=timedelta(minutes=1):
+                return 'Justo ahora'
+            return '{time} ago'.format(time=timesince(publish_time).split(',')[0])
+        return "No hay publicacion"
 
 def Movie_model_post_seve_receiver(sender, instance, created, *args, **kwargs):
     print ("Se ha almacenado")
