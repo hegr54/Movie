@@ -16,17 +16,17 @@ PUBLISH_CHOICES=(
 
 class MovieModelsQuerySet(models.query.QuerySet):
     def active(self):
-        return self.filter(active=True)
+        return self.filter(Active=True)
 
     def nuevo_Name_items(self, value):
-        return self.filter(Name_icontains=True)
+        return self.filter(Active=False)
 
 class MovieModelManager(models.Manager):
     def get_queryset(self):
         return MovieModelsQuerySet(self.model, using=self._db)
 
     def all(self,*args,**kwargs):
-        qs = super(MovieModelManager, self).all(*args,**kwargs.active())
+        qs = super(MovieModelManager, self).all(*args,**kwargs).filter(Active=True)
         print (qs)
         return qs
 
@@ -49,6 +49,7 @@ class Movie(models.Model):
     Timestamp=models.DateTimeField(auto_now_add=True)
 
     objects = MovieModelManager()
+    # others  = MovieModelsQuerySet()
 
     def __str__(self):
         return str(self.Name)
@@ -61,13 +62,13 @@ class Movie(models.Model):
         super(Movie,self).save(*args,**kwargs)
 
 
-    @property
+    @property #decorador
     def age(self):
         if self.Gender=='publish':
             now=datetime.now()
             publish_time=datetime.combine(
                          self.publish_date,
-                         datetime.now().max.time()
+                         datetime.now().min.time()
                          )
             print(publish_time)
             try:
